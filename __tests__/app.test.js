@@ -3,7 +3,6 @@ const pool = require('../lib/utils/pool');
 const request = require('supertest');
 const app = require('../lib/app');
 const Recipe = require('../lib/models/recipe');
-const { hasUncaughtExceptionCaptureCallback } = require('process');
 
 describe('recipe-lab routes', () => {
   beforeEach(() => {
@@ -39,7 +38,7 @@ describe('recipe-lab routes', () => {
 
   // GET SINGLE--------------------------------------------------------------
 
-  it('gets a single recipe', async() => {
+  it('gets a single recipe by id', async() => {
    
     const recipes = await Promise.all([
       { name: 'cookies', directions: [] },
@@ -48,15 +47,33 @@ describe('recipe-lab routes', () => {
     ].map(recipe => Recipe.insert(recipe)));
 
     return request(app)
-      .get('/api/v1/recipes/1')
+      .get('/api/v1/recipes')
       .then(res => {
-        expect(res.body).toEqual({
-          id: expect.any(String),
-          name: 'cookies',
-          directions: []
+        recipes.forEach(recipe => {
+          expect(res.body).toContainEqual(recipe);
         });
       });
   });
+
+  // ------------
+
+  // it('gets a recipe by id', async() => {
+
+  //   const recipe = await Recipe.insert({
+  //     name: 'cookies',
+  //     directions: [  
+  //       'preheat oven to 375',
+  //       'mix ingredients',
+  //       'put dough on cookie sheet',
+  //       'bake for 10 minutes'
+  //     ]
+  //   });
+
+  //   const res = await request(app)
+  //     .get(`/api/v1/recipes/${recipe.id}`);
+  //   expect(res.text).toEqual(recipe);
+  // });
+
 
   // GET ALL--------------------------------------------------------------
 
@@ -113,9 +130,9 @@ describe('recipe-lab routes', () => {
           ]
         });
       });
-    });
+  });
 
-    // DELETE--------------------------------------------------------------
+  // DELETE--------------------------------------------------------------
 
   it('deletes recipe', async() => {
     const thisRecipe = await Recipe.insert({
